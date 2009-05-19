@@ -1,3 +1,9 @@
+= d5/acts_as_audited
+
+d5/acts_as_audited is just a forked version of acts_as_audited. Instead of storing changes as a hash inside a column, an audit_changes table was made.
+
+This also allowed for associations to be handled. See usage for more information about that.
+
 = acts_as_audited
 
 acts_as_audited is an ActiveRecord extension that logs all changes to your models in an audits table.
@@ -24,7 +30,7 @@ The purpose of this fork is to store both the previous values and the changed va
 If you're using acts_as_audited within Rails, you can simply declare which models should be audited.  acts_as_audited can also automatically record the user that made the change if your controller has a <tt>current_user</tt> method.
 
   class ApplicationController < ActionController::Base
-    audit User, List, Item => {:except => :password}
+    audit User, List, Item => {:except => :password, :include => [:subitems]}
   protected
     def current_user
       @user ||= User.find(session[:user])
@@ -34,7 +40,7 @@ If you're using acts_as_audited within Rails, you can simply declare which model
 To get auditing outside of Rails you can explicitly declare <tt>acts_as_audited</tt> on your models:
 
     class User < ActiveRecord::Base
-      acts_as_audited :except => [:password, :mistress]
+      acts_as_audited :except => [:password, :mistress], include => [:items, :lists]
     end
 
 See http://opensoul.org/2006/07/21/acts_as_audited for more information.

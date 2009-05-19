@@ -1,5 +1,5 @@
 
-module CollectiveIdea #:nodoc:
+module ZenLang #:nodoc:
   module ActionController #:nodoc:
     module Audited #:nodoc:
 
@@ -21,7 +21,7 @@ module CollectiveIdea #:nodoc:
         # NOTE: Models which do not have options must be listed first in the
         # call to <tt>audit</tt>.
         #
-        # See <tt>CollectiveIdea::Acts::Audited::ClassMethods#acts_as_audited</tt>
+        # See <tt>ZenLang::Acts::Audited::ClassMethods#acts_as_audited</tt>
         # for configuration options
         #
         # You can also specify an options hash which will be passed on to

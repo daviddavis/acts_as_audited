@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-module CollectiveIdea #:nodoc:
+module ZenLang #:nodoc:
   module Acts #:nodoc:
     # Specify this act if you want changes to your model to be saved in an
     # audit table.  This assumes there is an audits table ready.
@@ -28,7 +28,7 @@ module CollectiveIdea #:nodoc:
     #     acts_as_audited
     #   end
     #
-    # See <tt>CollectiveIdea::Acts::Audited::ClassMethods#acts_as_audited</tt>
+    # See <tt>ZenLang::Acts::Audited::ClassMethods#acts_as_audited</tt>
     # for configuration options
     module Audited #:nodoc:
       CALLBACKS = [:audit_create, :audit_update, :audit_destroy]
@@ -62,16 +62,22 @@ module CollectiveIdea #:nodoc:
         # 
         def acts_as_audited(options = {})
           # don't allow multiple calls
-          return if self.included_modules.include?(CollectiveIdea::Acts::Audited::InstanceMethods)
+          return if self.included_modules.include?(ZenLang::Acts::Audited::InstanceMethods)
           
           options = {:protect => accessible_attributes.nil?}.merge(options)
 
           class_inheritable_reader :non_audited_columns
           class_inheritable_reader :auditing_enabled
+          class_inheritable_reader :audit_associations
 
+          # except fields
           except = [self.primary_key, inheritance_column, 'lock_version', 'created_at', 'updated_at']
           except |= Array(options[:except]).collect(&:to_s) if options[:except]
           write_inheritable_attribute :non_audited_columns, except
+          
+          # handle includes (associations)
+          includes = options[:include].blank? ? [] : options[:include]
+          write_inheritable_attribute :audit_associations, includes
 
           has_many :audits, :as => :auditable, :order => "#{Audit.quoted_table_name}.version"
           attr_protected :audit_ids if options[:protect]
@@ -83,8 +89,8 @@ module CollectiveIdea #:nodoc:
           
           attr_accessor :version
 
-          extend CollectiveIdea::Acts::Audited::SingletonMethods
-          include CollectiveIdea::Acts::Audited::InstanceMethods
+          extend ZenLang::Acts::Audited::SingletonMethods
+          include ZenLang::Acts::Audited::InstanceMethods
           
           write_inheritable_attribute :auditing_enabled, true
         end
@@ -135,6 +141,10 @@ module CollectiveIdea #:nodoc:
           attributes.except(*non_audited_columns)
         end
         
+        def audit_associations
+          audit_associations
+        end
+        
       protected
         
         def revision_with(attributes)
@@ -158,9 +168,10 @@ module CollectiveIdea #:nodoc:
         
       private
         
-        def audited_changes
-          changed_attributes.except(*non_audited_columns).inject({}) do |changes,(attr, old_value)|
-            changes[attr] = [old_value, self[attr]]
+        def audited_changes(all = false)
+          attrs = all ? audited_attributes : changed_attributes
+          attrs.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
+            changes << AuditChange.new(:field => attr, :old_value => old_value, :new_value => self[attr])
             changes
           end
         end
@@ -179,17 +190,17 @@ module CollectiveIdea #:nodoc:
         end
         
         def audit_create(user = nil)
-          write_audit(:action => 'create', :changes => audited_attributes, :user => user)
+          write_audit(:action => 'create', :audit_changes => audited_changes(true), :user => user)
         end
 
-        def audit_update(user = nil)
+        def audit_update(user = nil, changes = [])
           unless (changes = audited_changes).empty?
-            write_audit(:action => 'update', :changes => changes, :user => user)
+            write_audit(:action => 'update', :audit_changes => changes, :user => user)
           end
         end
 
         def audit_destroy(user = nil)
-          write_audit(:action => 'destroy', :user => user, :changes => audited_attributes)
+          write_audit(:action => 'destroy', :user => user, :audit_changes => audited_changes(true))
         end
       
         def write_audit(attrs)

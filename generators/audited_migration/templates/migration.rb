@@ -15,7 +15,6 @@ class <%= class_name %> < ActiveRecord::Migration
       t.column :audit_id, :integer
       t.column :association_type, :string
       t.column :association_id, :integer
-      t.column :action, :string
       t.column :field, :string
       t.column :old_value, :text
       t.column :new_value, :text

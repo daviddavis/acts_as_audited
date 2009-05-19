@@ -1,13 +1,13 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe CollectiveIdea::Acts::Audited do
+describe ZenLang::Acts::Audited do
   
   it "should include instance methods" do
-    User.new.should be_kind_of(CollectiveIdea::Acts::Audited::InstanceMethods)
+    User.new.should be_kind_of(ZenLang::Acts::Audited::InstanceMethods)
   end
   
   it "should extend singleton methods" do
-    User.should be_kind_of(CollectiveIdea::Acts::Audited::SingletonMethods)
+    User.should be_kind_of(ZenLang::Acts::Audited::SingletonMethods)
   end
 
   ['created_at', 'updated_at', 'lock_version', 'id', 'password'].each do |column|

@@ -1,6 +1,6 @@
 require 'set'
 
-# Audit saves the changes to ActiveRecord models.  It has the following attributes:
+# Audit saves a change to ActiveRecord models.  It has the following attributes:
 #
 # * <tt>auditable</tt>: the ActiveRecord model that was changed
 # * <tt>user</tt>: the user that performed the change; a string or an ActiveRecord model
@@ -11,6 +11,7 @@ require 'set'
 class Audit < ActiveRecord::Base
   belongs_to :auditable, :polymorphic => true
   belongs_to :user, :polymorphic => true
+  has_many :audit_changes
   
   before_create :set_version_number
   
