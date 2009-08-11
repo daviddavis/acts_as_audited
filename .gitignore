@@ -1,4 +1,5 @@
 acts_as_audited_plugin.sqlite3.db
+<<<<<<< HEAD:.gitignore
 spec/debug.log
 coverage/
 .svn/entries
@@ -19,3 +20,7 @@ tasks/.svn/entries
 tasks/.svn/format
 .svn/dir-props
 *svn*
+=======
+test/debug.log
+coverage/
+>>>>>>> 02e35ac368f3125887c4752a39610f5e914ff6b7:.gitignore
