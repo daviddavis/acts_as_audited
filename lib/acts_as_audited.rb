@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-module ZenLang #:nodoc:
+module CollectiveIdea #:nodoc:
   module Acts #:nodoc:
     # Specify this act if you want changes to your model to be saved in an
     # audit table.  This assumes there is an audits table ready.
@@ -28,7 +28,7 @@ module ZenLang #:nodoc:
     #     acts_as_audited
     #   end
     #
-    # See <tt>ZenLang::Acts::Audited::ClassMethods#acts_as_audited</tt>
+    # See <tt>CollectiveIdea::Acts::Audited::ClassMethods#acts_as_audited</tt>
     # for configuration options
     module Audited #:nodoc:
       CALLBACKS = [:audit_create, :audit_update, :audit_destroy]
@@ -62,7 +62,7 @@ module ZenLang #:nodoc:
         # 
         def acts_as_audited(options = {})
           # don't allow multiple calls
-          return if self.included_modules.include?(ZenLang::Acts::Audited::InstanceMethods)
+          return if self.included_modules.include?(CollectiveIdea::Acts::Audited::InstanceMethods)
           
           options = {:protect => accessible_attributes.nil?}.merge(options)
 
@@ -89,8 +89,8 @@ module ZenLang #:nodoc:
           
           attr_accessor :version
 
-          extend ZenLang::Acts::Audited::SingletonMethods
-          include ZenLang::Acts::Audited::InstanceMethods
+          extend CollectiveIdea::Acts::Audited::SingletonMethods
+          include CollectiveIdea::Acts::Audited::InstanceMethods
           
           write_inheritable_attribute :auditing_enabled, true
         end

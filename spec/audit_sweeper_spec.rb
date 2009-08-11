@@ -24,7 +24,7 @@
 #   end
 #   
 #   it "calls acts as audited on non audited models" do
-#     Company.should be_kind_of(ZenLang::Acts::Audited::SingletonMethods)
+#     Company.should be_kind_of(CollectiveIdea::Acts::Audited::SingletonMethods)
 #   end
 #   
 #   it "audits user" do
