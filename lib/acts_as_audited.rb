@@ -173,10 +173,25 @@ module CollectiveIdea #:nodoc:
       private
         
         def audited_changes(all = false)
-          changed_attributes.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
+          # get changes
+          trail = changed_attributes.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
             changes << AuditChange.new(:field => attr, :old_value => old_value, :new_value => self[attr])
             changes
           end
+          
+          # get changes in associations
+          audit_associations.each do |association|
+            associated_objects = self.send(association.to_sym)
+            associated_objects.each do |a|
+              attrs = a.send :changed_attributes
+              attrs.each do |attr, old_value|
+                trail << AuditChange.new(:field => attr, :old_value => old_value, :new_value => a[attr],
+                    :association => a)
+              end
+            end
+          end
+          
+          return trail 
         end
 
         def audits_to(version = nil)
