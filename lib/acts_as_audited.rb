@@ -70,6 +70,7 @@ module CollectiveIdea #:nodoc:
           class_inheritable_reader :non_audited_columns
           class_inheritable_reader :auditing_enabled
           class_inheritable_reader :audit_associations
+          class_inheritable_reader :audit_actions # which actions to audit
 
           if options[:only]
             except = self.column_names - options[:only].flatten.map(&:to_s)
@@ -86,7 +87,11 @@ module CollectiveIdea #:nodoc:
           has_many :audits, :as => :auditable, :order => "#{Audit.quoted_table_name}.version"
           attr_protected :audit_ids if options[:protect]
           Audit.audited_class_names << self.to_s
-
+          
+          actions = options[:actions] || [:read, :write, :update]
+          actions = [actions] unless actions.is_a?(Array)
+          write_inheritable_attribute :audit_actions, actions
+          
           after_create :audit_create_callback
           before_update :audit_update_callback
           after_destroy :audit_destroy_callback
@@ -222,7 +227,9 @@ module CollectiveIdea #:nodoc:
         end
 
         def write_audit(attrs)
-          self.audits.create attrs if auditing_enabled
+          if (auditing_enabled and audit_actions.include?(attrs[:action].to_sym))
+            self.audits.create attrs
+          end
         end
 
         CALLBACKS.each do |attr_name|
