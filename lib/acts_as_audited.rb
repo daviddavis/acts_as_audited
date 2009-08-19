@@ -69,7 +69,6 @@ module CollectiveIdea #:nodoc:
 
           class_inheritable_reader :non_audited_columns
           class_inheritable_reader :auditing_enabled
-          class_inheritable_reader :audit_associations
           class_inheritable_reader :audit_actions # which actions to audit
 
           if options[:only]
@@ -79,10 +78,6 @@ module CollectiveIdea #:nodoc:
             except |= Array(options[:except]).collect(&:to_s) if options[:except]
           end
           write_inheritable_attribute :non_audited_columns, except
-          
-          # handle includes (associations)
-          includes = options[:include].blank? ? [] : options[:include]
-          write_inheritable_attribute :audit_associations, includes
 
           has_many :audits, :as => :auditable, :order => "#{Audit.quoted_table_name}.version"
           attr_protected :audit_ids if options[:protect]
@@ -149,10 +144,6 @@ module CollectiveIdea #:nodoc:
         def audited_attributes
           attributes.except(*non_audited_columns)
         end
-
-        def audit_associations
-          audit_associations
-        end
         
       protected
 
@@ -178,25 +169,10 @@ module CollectiveIdea #:nodoc:
       private
         
         def audited_changes(all = false)
-          # get changes
-          trail = changed_attributes.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
+          changed_attributes.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
             changes << AuditChange.new(:field => attr, :old_value => old_value, :new_value => self[attr])
             changes
-          end
-          
-          # get changes in associations
-          audit_associations.each do |association|
-            associated_objects = self.send(association.to_sym)
-            associated_objects.each do |a|
-              attrs = a.send :changed_attributes
-              attrs.each do |attr, old_value|
-                trail << AuditChange.new(:field => attr, :old_value => old_value, :new_value => a[attr],
-                    :association => a)
-              end
-            end
-          end
-          
-          return trail 
+          end     
         end
 
         def audits_to(version = nil)
