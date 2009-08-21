@@ -170,7 +170,7 @@ module CollectiveIdea #:nodoc:
         
         def audited_changes(all = false)
           changed_attributes.except(*non_audited_columns).inject([]) do |changes,(attr, old_value)|
-            changes << AuditChange.new(:field => attr, :old_value => old_value, :new_value => self[attr])
+            changes << AuditChange.new(:field => attr, :old_value => old_value.to_s, :new_value => self[attr].to_s)
             changes
           end     
         end
